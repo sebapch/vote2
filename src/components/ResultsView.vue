@@ -28,77 +28,61 @@
         <div v-if="question.image_url" class="relative h-24 overflow-hidden bg-slate-100 shrink-0">
           <img :src="question.image_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-          <span class="absolute top-2.5 left-2.5 w-7 h-7 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center text-[10px] font-black text-slate-700">#{{ i + 1 }}</span>
+          <span class="absolute top-2.5 left-2.5 w-6 h-6 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center text-[9px] font-black text-slate-700">#{{ i + 1 }}</span>
         </div>
 
-        <div class="p-4 flex flex-col flex-1">
+        <div class="p-3 flex flex-col flex-1 gap-2">
           <!-- Rank (no image) -->
-          <div v-if="!question.image_url" class="flex items-center gap-1.5 mb-2.5">
-            <span class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500">#{{ i + 1 }}</span>
+          <div v-if="!question.image_url" class="flex items-center gap-1.5">
+            <span class="w-6 h-6 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[9px] font-black text-slate-500">#{{ i + 1 }}</span>
           </div>
 
           <!-- Question text -->
-          <h3 class="text-xs font-bold text-slate-900 leading-snug mb-4 line-clamp-2 flex-1">{{ question.text }}</h3>
-
-          <!-- Stats row -->
-          <div class="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest mb-2">
-            <span :class="getYesPercent(question) >= 50 ? 'text-blue-600' : 'text-slate-400'">
-              {{ getYesPercent(question) }}% {{ $t('results.yes') }}
-            </span>
-            <span class="text-slate-300">{{ $t('results.voted', { n: getTotalVotes(question) }) }}</span>
-            <span :class="getYesPercent(question) < 50 ? 'text-slate-700' : 'text-slate-400'">
-              {{ $t('results.no') }} {{ 100 - getYesPercent(question) }}%
-            </span>
-          </div>
+          <h3 class="text-[11px] font-bold text-slate-900 leading-snug line-clamp-3 flex-1">{{ question.text }}</h3>
 
           <!-- Split bar -->
-          <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex mb-3.5">
+          <div class="h-1 w-full bg-slate-100 rounded-full overflow-hidden flex">
             <div class="h-full bg-blue-500 rounded-full transition-all duration-700" :style="{ width: getYesPercent(question) + '%' }"></div>
             <div class="h-full bg-slate-300 rounded-full transition-all duration-700" :style="{ width: (100 - getYesPercent(question)) + '%' }"></div>
           </div>
 
-          <!-- Bottom row: creator + personal badge + report -->
-          <div class="flex items-center justify-between">
+          <!-- Stats row -->
+          <div class="flex items-center justify-between text-[8px] font-bold uppercase tracking-wider">
+            <span :class="getYesPercent(question) >= 50 ? 'text-blue-500' : 'text-slate-300'">
+              {{ getYesPercent(question) }}%
+            </span>
+            <span class="text-slate-300">{{ $t('results.voted', { n: getTotalVotes(question) }) }}</span>
+            <span :class="getYesPercent(question) < 50 ? 'text-slate-600' : 'text-slate-300'">
+              {{ 100 - getYesPercent(question) }}%
+            </span>
+          </div>
+
+          <!-- Bottom row: creator avatar + vote result badge -->
+          <div class="flex items-center gap-1.5 pt-0.5">
             <!-- Creator avatar -->
             <button
-              class="w-7 h-7 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all shrink-0"
+              class="w-6 h-6 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all shrink-0"
               :title="$t('results.view_profile')"
               @click.stop="selectedCreatorId = question.user_id"
             >
-              <img 
-                v-if="question.creator?.avatar_url && !avatarErrors[question.user_id]" 
-                :src="question.creator.avatar_url" 
-                class="w-full h-full object-cover" 
+              <img
+                v-if="question.creator?.avatar_url && !avatarErrors[question.user_id]"
+                :src="question.creator.avatar_url"
+                class="w-full h-full object-cover"
                 @error="avatarErrors[question.user_id] = true"
               />
-              <User v-else :size="12" class="text-slate-400" />
+              <User v-else :size="10" class="text-slate-400" />
             </button>
 
-            <!-- Personal badge: only if user voted this -->
+            <!-- Vote result badge -->
             <span
               v-if="getUserVote(question.id)"
-              class="text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-full"
-              :class="isWinning(question) ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'"
+              class="text-[8px] font-black tracking-wide px-1.5 py-0.5 rounded-full leading-none"
+              :class="isWinning(question) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
             >
-              {{ isWinning(question) ? $t('results.winning') : $t('results.losing') }}
+              {{ isWinning(question) ? '🔥 +1' : '😬 -1' }}
             </span>
-
-            <!-- No vote yet badge -->
-            <span v-else-if="getTotalVotes(question) === 0" class="text-[8px] font-bold text-slate-300 uppercase tracking-wider">{{ $t('results.no_votes') }}</span>
-
-            <!-- Report button -->
-            <button
-              @click.stop="handleReport(question.id)"
-              :disabled="userReports.includes(question.id)"
-              :title="userReports.includes(question.id) ? $t('report.already') : $t('report.button')"
-              class="flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all active:scale-90 ml-auto"
-              :class="userReports.includes(question.id)
-                ? 'text-slate-300 cursor-not-allowed'
-                : 'text-orange-400 hover:bg-orange-50 hover:text-orange-600'"
-            >
-              <Flag :size="9" />
-              {{ userReports.includes(question.id) ? $t('report.done') : $t('report.button') }}
-            </button>
+            <span v-else-if="getTotalVotes(question) === 0" class="text-[8px] font-bold text-slate-300">—</span>
           </div>
         </div>
       </div>
@@ -115,7 +99,7 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue';
-import { BarChart3, User, Flag } from 'lucide-vue-next';
+import { BarChart3, User } from 'lucide-vue-next';
 import PublicProfileModal from './PublicProfileModal.vue';
 import { useAuth } from '../composables/useAuth';
 import { useVoteData } from '../composables/useVoteData';
@@ -123,14 +107,10 @@ import { useVoteData } from '../composables/useVoteData';
 const props = defineProps({ questions: Array });
 
 const { user } = useAuth();
-const { userVotes, userReports, reportQuestion } = useVoteData();
+const { userVotes } = useVoteData();
 
 const selectedCreatorId = ref(null);
 const avatarErrors = reactive({});
-
-const handleReport = async (questionId) => {
-  await reportQuestion(questionId);
-};
 
 const getTotalVotes = (q) => (q.yes_count || 0) + (q.no_count || 0);
 const getYesPercent = (q) => {
