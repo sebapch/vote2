@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
+import i18n from '../i18n'
 
 const { user } = useAuth()
 
@@ -30,11 +31,12 @@ export function useVoteData() {
         if (!user.value || loading.value) return
         loading.value = true
         try {
+            const currentLang = i18n.global.locale.value
             const [{ data: qData, error: qErr }, { data: vData, error: vErr }, { count, error: cErr }] =
                 await Promise.all([
-                    supabase.from('vote_questions').select('*').order('created_at', { ascending: false }),
+                    supabase.from('vote_questions').select('*').eq('lang', currentLang).order('created_at', { ascending: false }),
                     supabase.from('vote_votes').select('*').eq('user_id', user.value.id),
-                    supabase.from('vote_questions').select('*', { count: 'exact', head: true }).eq('user_id', user.value.id),
+                    supabase.from('vote_questions').select('*', { count: 'exact', head: true }).eq('user_id', user.value.id).eq('lang', currentLang),
                 ])
             if (qErr) throw qErr
             if (vErr) throw vErr
@@ -54,6 +56,14 @@ export function useVoteData() {
             questions.value = (qData || []).map(q => ({ ...q, creator: profileMap[q.user_id] ?? null }))
             userVotes.value = vData
             userCreatedCount.value = count || 0
+
+            // Preload images for current language to avoid blank cards
+            questions.value.slice(0, 5).forEach(q => {
+                if (q.image_url) {
+                    const img = new Image();
+                    img.src = q.image_url;
+                }
+            });
 
         } catch (e) {
             console.error('fetchData error:', e.message)
@@ -81,9 +91,16 @@ export function useVoteData() {
     const createQuestion = async (payload) => {
         if (!user.value) return null
         try {
+            const currentLang = i18n.global.locale.value
             const { data, error } = await supabase
                 .from('vote_questions')
-                .insert({ user_id: user.value.id, text: payload.text, category: payload.category, image_url: payload.image })
+                .insert({
+                    user_id: user.value.id,
+                    text: payload.text,
+                    category: payload.category,
+                    image_url: payload.image,
+                    lang: currentLang
+                })
                 .select()
                 .single()
             if (error) throw error

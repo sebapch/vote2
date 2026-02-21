@@ -29,21 +29,21 @@
         <div class="flex gap-3 px-5 py-4 border-b border-slate-100 shrink-0">
           <div class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
             <span class="text-2xl font-black text-slate-900">{{ createdQuestions.length }}</span>
-            <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5 text-center">Votaciones</span>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5 text-center">{{ $t('public_profile.questions') }}</span>
           </div>
           <div class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
             <span class="text-2xl font-black text-blue-600">{{ totalVotesReceived }}</span>
-            <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5 text-center">Votos recibidos</span>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5 text-center">{{ $t('public_profile.votes_received') }}</span>
           </div>
           <div class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
             <span class="text-2xl font-black text-slate-900">{{ avgYesPercent }}%</span>
-            <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5 text-center">Promedio Sí</span>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5 text-center">{{ $t('public_profile.avg_yes') }}</span>
           </div>
         </div>
 
         <!-- Section label -->
         <div class="px-5 pt-4 pb-2 shrink-0">
-          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Votaciones creadas</p>
+          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{{ $t('public_profile.created_label') }}</p>
         </div>
 
         <!-- Scrollable question list -->
@@ -70,19 +70,19 @@
               <!-- Chips row — centered -->
               <div class="flex items-center justify-center gap-2">
                 <span class="flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg">
-                  <ThumbsUp :size="9" /> {{ q.yes_count || 0 }} Sí ({{ getYesPercent(q) }}%)
+                  <ThumbsUp :size="9" /> {{ q.yes_count || 0 }} {{ $t('results.yes') }} ({{ getYesPercent(q) }}%)
                 </span>
                 <span class="text-[9px] text-slate-300">·</span>
                 <span class="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg">
-                  <ThumbsDown :size="9" /> {{ q.no_count || 0 }} No
+                  <ThumbsDown :size="9" /> {{ q.no_count || 0 }} {{ $t('results.no') }}
                 </span>
-                <span class="text-[9px] text-slate-400 ml-1">{{ getTotalVotes(q) }}v.</span>
+                <span class="text-[9px] text-slate-400 ml-1">{{ $t('results.voted', { n: getTotalVotes(q) }) }}</span>
               </div>
             </div>
           </div>
 
           <div v-if="!createdQuestions.length" class="py-10 flex justify-center">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sin votaciones creadas</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ $t('public_profile.empty') }}</p>
           </div>
         </div>
       </template>
@@ -92,9 +92,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { User, X, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import { supabase } from '../lib/supabase'
+import i18n from '../i18n'
 
+const { t } = useI18n()
 const props = defineProps({ userId: String })
 defineEmits(['close'])
 
@@ -105,7 +108,7 @@ const loadingProfile = ref(true)
 // Only show first name for privacy
 const firstName = computed(() => {
   const name = profile.value?.full_name || ''
-  return name.split(' ')[0] || 'Usuario'
+  return name.split(' ')[0] || t('public_profile.default_name')
 })
 
 const getTotalVotes = (q) => (q.yes_count || 0) + (q.no_count || 0)
@@ -127,7 +130,7 @@ onMounted(async () => {
   try {
     const [{ data: profileData }, { data: qData }] = await Promise.all([
       supabase.from('vote_profiles').select('full_name, avatar_url').eq('id', props.userId).single(),
-      supabase.from('vote_questions').select('*').eq('user_id', props.userId).order('created_at', { ascending: false }),
+      supabase.from('vote_questions').select('*').eq('user_id', props.userId).eq('lang', i18n.global.locale.value).order('created_at', { ascending: false }),
     ])
     profile.value = profileData
     createdQuestions.value = qData || []

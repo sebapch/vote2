@@ -9,22 +9,34 @@
   >
     <!-- Image -->
     <div class="relative w-full h-[60%] overflow-hidden bg-slate-100">
-      <img 
-        v-if="question.image_url" 
-        :src="question.image_url" 
-        :alt="question.text" 
-        class="w-full h-full object-cover" 
-        draggable="false" 
-      />
+      <div v-if="question.image_url" class="w-full h-full relative bg-slate-50">
+        <!-- Skeleton/Spinner while loading -->
+        <div 
+          v-if="!imageLoaded" 
+          class="absolute inset-0 flex items-center justify-center bg-slate-50 z-10"
+        >
+          <div class="w-6 h-6 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+        
+        <img 
+          ref="imgRef"
+          :src="question.image_url" 
+          :alt="question.text" 
+          class="w-full h-full object-cover transition-opacity duration-500"
+          :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+          @load="imageLoaded = true"
+          @error="imageError = true"
+          draggable="false" 
+        />
+
+        <!-- Error fallback -->
+        <div v-if="imageError" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400 gap-2">
+           <ImageIcon :size="24" class="opacity-30" />
+           <span class="text-[9px] font-bold uppercase tracking-widest opacity-50">Error al cargar</span>
+        </div>
+      </div>
       <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
         <span class="text-6xl opacity-20">?</span>
-      </div>
-      
-      <!-- Category Badge -->
-      <div class="absolute top-4 left-4">
-        <span class="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-[9px] font-black uppercase tracking-widest text-slate-700 border border-white shadow-sm">
-          {{ question.category }}
-        </span>
       </div>
     </div>
     
@@ -42,7 +54,7 @@
           @click.stop="$emit('vote', 'no')"
           class="flex-1 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 active:scale-95 transition-all"
         >
-          <X :size="14" /> No
+          <X :size="14" /> {{ $t('results.no') }}
         </button>
         <button 
           @mousedown.stop 
@@ -50,30 +62,30 @@
           @click.stop="$emit('vote', 'yes')"
           class="flex-1 py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-slate-200"
         >
-          <Check :size="14" /> Sí
+          <Check :size="14" /> {{ $t('results.yes') }}
         </button>
       </div>
     </div>
 
     <!-- Swipe Indicators -->
     <div 
-      class="absolute top-10 left-8 border-[4px] border-blue-600 text-blue-600 font-black text-3xl px-4 py-1.5 rounded-2xl pointer-events-none -rotate-[20deg]"
+      class="absolute top-10 left-8 border-[4px] border-blue-600 text-blue-600 font-black text-3xl px-4 py-1.5 rounded-2xl pointer-events-none -rotate-[20deg] uppercase"
       :style="{ opacity: yesOpacity }"
     >
-      SÍ
+      {{ $t('results.yes') }}
     </div>
     <div 
-      class="absolute top-10 right-8 border-[4px] border-red-500 text-red-500 font-black text-3xl px-4 py-1.5 rounded-2xl pointer-events-none rotate-[20deg]"
+      class="absolute top-10 right-8 border-[4px] border-red-500 text-red-500 font-black text-3xl px-4 py-1.5 rounded-2xl pointer-events-none rotate-[20deg] uppercase"
       :style="{ opacity: noOpacity }"
     >
-      NO
+      {{ $t('results.no') }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from 'vue';
-import { Check, X } from 'lucide-vue-next';
+import { ref, computed, onUnmounted, onMounted } from 'vue';
+import { Check, X, ImageIcon } from 'lucide-vue-next';
 
 const props = defineProps({
   question: Object,
@@ -83,6 +95,15 @@ const props = defineProps({
 const emit = defineEmits(['vote']);
 
 const cardRef = ref(null);
+const imgRef = ref(null);
+const imageLoaded = ref(false);
+const imageError = ref(false);
+
+onMounted(() => {
+  if (imgRef.value?.complete) {
+    imageLoaded.value = true;
+  }
+});
 const isDragging = ref(false);
 const startX = ref(0);
 const currentX = ref(0);

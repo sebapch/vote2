@@ -3,9 +3,9 @@
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 px-1">
-      <h2 class="text-xl font-extrabold tracking-tight text-slate-900">Resultados</h2>
+      <h2 class="text-xl font-extrabold tracking-tight text-slate-900">{{ $t('results.title') }}</h2>
       <span class="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
-        {{ questions.length }} preguntas
+        {{ $t('results.count', { n: questions.length }) }}
       </span>
     </div>
 
@@ -14,7 +14,7 @@
       <div class="w-14 h-14 bg-white rounded-2xl border border-slate-200 flex items-center justify-center shadow-sm">
         <BarChart3 :size="24" class="text-slate-300" />
       </div>
-      <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Sin resultados aún</p>
+      <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">{{ $t('results.empty') }}</p>
     </div>
 
     <!-- 2-column grid -->
@@ -43,11 +43,11 @@
           <!-- Stats row -->
           <div class="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest mb-2">
             <span :class="getYesPercent(question) >= 50 ? 'text-blue-600' : 'text-slate-400'">
-              {{ getYesPercent(question) }}% Sí
+              {{ getYesPercent(question) }}% {{ $t('results.yes') }}
             </span>
-            <span class="text-slate-300">{{ getTotalVotes(question) }} v.</span>
+            <span class="text-slate-300">{{ $t('results.voted', { n: getTotalVotes(question) }) }}</span>
             <span :class="getYesPercent(question) < 50 ? 'text-slate-700' : 'text-slate-400'">
-              No {{ 100 - getYesPercent(question) }}%
+              {{ $t('results.no') }} {{ 100 - getYesPercent(question) }}%
             </span>
           </div>
 
@@ -62,7 +62,7 @@
             <!-- Creator avatar -->
             <button
               class="w-7 h-7 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all shrink-0"
-              :title="question.creator?.full_name || 'Ver perfil'"
+              :title="$t('results.view_profile')"
               @click.stop="selectedCreatorId = question.user_id"
             >
               <img v-if="question.creator?.avatar_url" :src="question.creator.avatar_url" class="w-full h-full object-cover" />
@@ -75,11 +75,11 @@
               class="text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-full"
               :class="isWinning(question) ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'"
             >
-              {{ isWinning(question) ? '🔥 Ganás' : '😬 Perdés' }}
+              {{ isWinning(question) ? $t('results.winning') : $t('results.losing') }}
             </span>
 
             <!-- No vote yet badge -->
-            <span v-else-if="getTotalVotes(question) === 0" class="text-[8px] font-bold text-slate-300 uppercase tracking-wider">Sin votos</span>
+            <span v-else-if="getTotalVotes(question) === 0" class="text-[8px] font-bold text-slate-300 uppercase tracking-wider">{{ $t('results.no_votes') }}</span>
           </div>
         </div>
       </div>

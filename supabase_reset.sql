@@ -32,6 +32,7 @@ create table vote_questions (
   text text not null,
   image_url text,
   category text default 'General',
+  lang text default 'es' check (lang in ('es', 'en')),
   yes_count int default 0,
   no_count int default 0
 );
@@ -121,35 +122,28 @@ on conflict (id) do update
       updated_at = now();
 
 
--- 7. SEED: 30 preguntas de prueba
-insert into vote_questions (text, category, yes_count, no_count, user_id) values
-  ('¿Debería el teletrabajo ser un derecho universal?', 'Trabajo', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Pagarías más impuestos si eso mejorara la salud pública?', 'Sociedad', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿El dinero da la felicidad?', 'Vida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Las redes sociales hacen más daño que bien?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Preferirías vivir en el campo antes que en la ciudad?', 'Vida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿La inteligencia artificial va a reemplazar tu trabajo?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Comerías carne cultivada en laboratorio?', 'Comida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Crees que la semana laboral debería ser de 4 días?', 'Trabajo', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿El fútbol es el deporte más aburrido del mundo?', 'Deporte', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Usarías un chip cerebral si te hiciera más inteligente?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿El matrimonio es una institución obsoleta?', 'Sociedad', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Deberían prohibirse los autos de combustión para 2030?', 'Sociedad', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Dormirías 8 horas aunque eso te costara un ascenso?', 'Vida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿El café es mejor que el mate?', 'Comida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Crees que los humanos llegarán a Marte antes de 2040?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Es ético tener animales domésticos?', 'Sociedad', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Preferirías ser muy inteligente antes que muy creativo?', 'Vida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Las criptomonedas son el futuro del dinero?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Votarías por un presidente robot si tomara mejores decisiones?', 'Sociedad', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿La pizza con piña debería estar prohibida por ley?', 'Comida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Harías ejercicio todos los días si te pagaran por eso?', 'Deporte', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿El trabajo remoto destruye la cultura de empresa?', 'Trabajo', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Crees que existe vida inteligente fuera de la Tierra?', 'General', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Pagarías por una app si no tuviera publicidad?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Es posible ser amigo de tu ex pareja?', 'Vida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Preferirías leer un libro antes que ver una serie?', 'Cultura', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿La educación universitaria debería ser gratuita?', 'Sociedad', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Usarías ropa generada por IA si fuera más barata?', 'Tech', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Crees que el veganismo debería ser la norma global?', 'Comida', 0, 0, (select id from vote_profiles limit 1)),
-  ('¿Trabajarías gratis en algo que te apasionara?', 'Trabajo', 0, 0, (select id from vote_profiles limit 1));
+-- 7. SEED: 10 preguntas en español y 10 en inglés con imágenes
+insert into vote_questions (text, category, lang, image_url, user_id) values
+  -- Español (10)
+  ('¿Debería el teletrabajo ser un derecho universal?', 'Trabajo', 'es', 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿Pagarías más impuestos por una mejor salud pública?', 'Sociedad', 'es', 'https://images.unsplash.com/photo-1505751172107-1bc32c38ed3d?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿El dinero realmente da la felicidad?', 'Vida', 'es', 'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿Las redes sociales hacen más daño que bien?', 'Tech', 'es', 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿Preferirías vivir en el campo que en la ciudad?', 'Vida', 'es', 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿La IA reemplazará la mayoría de los trabajos?', 'Tech', 'es', 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿Comerías carne cultivada en laboratorio?', 'Comida', 'es', 'https://images.unsplash.com/photo-1587593817642-599961aee2fc?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿La semana laboral debería ser de 4 días?', 'Trabajo', 'es', 'https://images.unsplash.com/photo-1506784919141-93ac348c081d?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿El café es mejor que el té?', 'Comida', 'es', 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('¿Las criptomonedas son el futuro del dinero?', 'Tech', 'es', 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&q=80', (select id from vote_profiles limit 1)),
+
+  -- English (10)
+  ('Should remote work be a universal right?', 'Work', 'en', 'https://images.unsplash.com/photo-1521791136064-7986c2923216?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Would you pay more taxes for better healthcare?', 'Society', 'en', 'https://images.unsplash.com/photo-1538108149393-fdfd818d59ae?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Does money truly bring happiness?', 'Life', 'en', 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Is social media more harmful than helpful?', 'Tech', 'en', 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Would you choose country life over city life?', 'Life', 'en', 'https://images.unsplash.com/photo-1444333509404-c20d9cb52f86?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Will AI replace most human jobs?', 'Tech', 'en', 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Would you eat lab-grown cultivated meat?', 'Food', 'en', 'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Should the work week be 4 days instead of 5?', 'Work', 'en', 'https://images.unsplash.com/photo-1454165833767-027508492025?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Is coffee superior to tea?', 'Food', 'en', 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80', (select id from vote_profiles limit 1)),
+  ('Are cryptocurrencies the future of finance?', 'Tech', 'en', 'https://images.unsplash.com/photo-1621761191319-c6fb620040bc?w=800&q=80', (select id from vote_profiles limit 1));

@@ -5,7 +5,7 @@
     <div v-if="!authInitialized" class="flex items-center justify-center min-h-screen">
       <div class="flex flex-col items-center gap-3 opacity-30">
         <div class="w-8 h-8 border-[3px] border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
-        <p class="font-bold text-[10px] uppercase tracking-widest text-slate-500">Cargando</p>
+        <p class="font-bold text-[10px] uppercase tracking-widest text-slate-500">{{ $t('app.loading') }}</p>
       </div>
     </div>
 
@@ -20,7 +20,7 @@
         <!-- Data loading -->
         <div v-if="loading" class="flex flex-col items-center gap-3 opacity-30">
           <div class="w-8 h-8 border-[3px] border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
-          <p class="font-bold text-[10px] uppercase tracking-widest text-slate-500">Sincronizando</p>
+          <p class="font-bold text-[10px] uppercase tracking-widest text-slate-500">{{ $t('app.syncing') }}</p>
         </div>
 
         <template v-else>
@@ -60,6 +60,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from './composables/useAuth'
 import { useVoteData } from './composables/useVoteData'
 
@@ -77,6 +78,7 @@ const { questions, userVotes, userCreatedCount, profileHistory, loading, fetchDa
 const currentTab = ref('feed')
 const showCreateModal = ref(false)
 const feedRef = ref(null)
+const { locale } = useI18n()
 
 // Single watcher: fetch when user logs in, clear when logs out
 watch(user, (newUser, oldUser) => {
@@ -86,6 +88,14 @@ watch(user, (newUser, oldUser) => {
     clearData()
   }
 }, { immediate: true })
+
+// Watch for language changes to refetch filtered questions
+watch(locale, async () => {
+  if (user.value) {
+    await fetchData()
+    feedRef.value?.reset()
+  }
+})
 
 const handleReload = async () => {
   await fetchData()

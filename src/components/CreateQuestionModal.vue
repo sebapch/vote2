@@ -12,7 +12,7 @@
       <div class="p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-base font-bold text-slate-900">Nueva pregunta</h2>
+          <h2 class="text-base font-bold text-slate-900">{{ $t('create.title') }}</h2>
           <button 
             @click="$emit('close')" 
             class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
@@ -25,7 +25,7 @@
           <!-- Question textarea -->
           <textarea 
             v-model="form.text"
-            placeholder="¿Debería el teletrabajo ser un derecho universal?"
+            :placeholder="$t('create.placeholder')"
             class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all resize-none leading-relaxed"
             rows="3"
             required
@@ -46,7 +46,7 @@
                 <X :size="13" />
               </button>
               <span class="absolute bottom-2 left-3 text-[10px] font-bold text-white/80">
-                {{ imageSize }} · WebP comprimido
+                {{ imageSize }} · {{ $t('create.image_compressed') }}
               </span>
             </div>
 
@@ -67,15 +67,14 @@
               </div>
               <div class="text-center px-4">
                 <p class="text-xs font-semibold text-slate-600">
-                  {{ isDragging ? 'Suelta la imagen aquí' : 'Agregar imagen' }}
+                  {{ isDragging ? $t('create.image_label') : $t('create.image_label') }}
                 </p>
-                <p class="text-[10px] text-slate-400 mt-0.5">Arrastra, pega o toca para subir</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">{{ $t('create.image_hint') }}</p>
               </div>
               <input 
                 ref="fileInputRef"
                 type="file"
                 accept="image/*"
-                capture="environment"
                 class="hidden"
                 @change="onFileSelect"
               />
@@ -89,7 +88,7 @@
             class="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-2xl hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           >
             <Loader2 v-if="isUploading" :size="16" class="animate-spin" />
-            <span>{{ isUploading ? 'Publicando…' : 'Publicar' }}</span>
+            <span>{{ isUploading ? $t('create.uploading') : $t('create.submit') }}</span>
           </button>
         </form>
       </div>

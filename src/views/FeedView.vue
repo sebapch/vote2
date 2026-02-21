@@ -22,13 +22,12 @@
       <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-slate-100">
         <Trophy :size="32" class="text-blue-600" />
       </div>
-      <h2 class="text-2xl font-bold text-slate-900 mb-2 tracking-tight">¡Todo listo!</h2>
-      <p class="text-slate-500 mb-10 text-sm font-medium">Has votado todas las preguntas disponibles.</p>
+      <h2 class="text-lg font-bold text-slate-900 mb-2 tracking-tight">{{ $t('feed.empty') }}</h2>
       <button
         @click="$emit('reload')"
         class="w-full py-4 bg-slate-100 text-slate-900 font-bold rounded-2xl hover:bg-slate-200 transition-all border border-slate-200"
       >
-        Recargar
+        {{ $t('feed.reloading') }}
       </button>
     </div>
   </div>

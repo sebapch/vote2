@@ -7,7 +7,7 @@
         :class="activeTab === 'feed' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'"
       >
         <Layers :size="17" />
-        <span v-if="activeTab === 'feed'" class="text-[11px] font-bold">Explorar</span>
+        <span v-if="activeTab === 'feed'" class="text-[11px] font-bold">{{ $t('nav.feed') }}</span>
       </button>
 
       <button
@@ -23,7 +23,7 @@
         :class="activeTab === 'results' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'"
       >
         <BarChart3 :size="17" />
-        <span v-if="activeTab === 'results'" class="text-[11px] font-bold">Ranking</span>
+        <span v-if="activeTab === 'results'" class="text-[11px] font-bold">{{ $t('nav.results') }}</span>
       </button>
     </div>
   </nav>
