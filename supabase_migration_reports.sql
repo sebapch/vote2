@@ -20,15 +20,18 @@ create table if not exists vote_reports (
 alter table vote_reports enable row level security;
 
 -- 4. Policies para vote_reports
+drop policy if exists "Ver propias denuncias" on vote_reports;
 create policy "Ver propias denuncias" on vote_reports
   for select using (auth.uid() = user_id);
 
+drop policy if exists "Denunciar autenticado" on vote_reports;
 create policy "Denunciar autenticado" on vote_reports
   for insert with check (auth.role() = 'authenticated');
 
 -- 5. Reemplazar la policy de SELECT en vote_questions
 --    para ocultar las preguntas con 3+ denuncias
 drop policy if exists "Preguntas públicas" on vote_questions;
+drop policy if exists "Preguntas visibles" on vote_questions;
 create policy "Preguntas visibles" on vote_questions
   for select using (reports_count < 3);
 

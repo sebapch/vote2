@@ -47,11 +47,11 @@ export function useVoteData() {
             ])
             if (vErr) throw vErr
             if (cErr) throw cErr
-            if (rErr) throw rErr
+            // rErr ignored: table may not exist yet if migration hasn't run
 
             userVotes.value = vData || []
             userCreatedCount.value = count || 0
-            userReports.value = (rData || []).map(r => r.question_id)
+            userReports.value = rErr ? [] : (rData || []).map(r => r.question_id)
 
             // 2. Determine which question IDs we need (current feed + all voted questions)
             const votedIds = (vData || []).map(v => v.question_id)
