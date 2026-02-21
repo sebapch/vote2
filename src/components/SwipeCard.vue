@@ -39,20 +39,19 @@
         <span class="text-6xl opacity-20">?</span>
       </div>
 
-      <!-- Report button: top-right corner, always visible -->
+      <!-- Report button: icon-only circle, top-LEFT of image -->
       <button
         @mousedown.stop
         @touchstart.stop
         @click.stop="handleReport"
         :disabled="reported"
         :title="reported ? $t('report.already') : $t('report.tooltip')"
-        class="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-90 shadow-lg"
+        class="absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 shadow-md"
         :class="reported
-          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-          : 'bg-orange-500 text-white hover:bg-red-600 hover:scale-105'"
+          ? 'bg-slate-300/70 text-slate-400 cursor-not-allowed'
+          : 'bg-black/30 text-white hover:bg-orange-500 backdrop-blur-sm'"
       >
-        <Flag :size="11" />
-        {{ reported ? $t('report.done') : $t('report.button') }}
+        <Flag :size="13" />
       </button>
     </div>
 
@@ -82,24 +81,8 @@
           <Check :size="14" /> {{ $t('results.yes') }}
         </button>
       </div>
-
-      <!-- Report button fallback for no-image cards -->
-      <button
-        v-if="!question.image_url"
-        @mousedown.stop
-        @touchstart.stop
-        @click.stop="handleReport"
-        :disabled="reported"
-        :title="reported ? $t('report.already') : $t('report.tooltip')"
-        class="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all active:scale-90"
-        :class="reported
-          ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-          : 'bg-orange-100 text-orange-500 hover:bg-orange-500 hover:text-white'"
-      >
-        <Flag :size="10" />
-        {{ reported ? $t('report.done') : $t('report.button') }}
-      </button>
     </div>
+
 
     <!-- Swipe Indicators -->
     <div 
