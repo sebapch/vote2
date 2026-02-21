@@ -29,8 +29,14 @@ export function useVoteData() {
     })
 
     const unvotedQuestions = computed(() => {
+        const currentLang = i18n.global.locale.value
+        const otherLang = currentLang === 'es' ? 'en' : 'es'
         const votedIds = new Set(userVotes.value.map(v => v.question_id))
-        return currentLangQuestions.value.filter(q => !votedIds.has(q.id))
+        // Primary: unvoted questions in the current language
+        const primary = questions.value.filter(q => q.lang === currentLang && !votedIds.has(q.id))
+        // Fallback: unvoted questions in the other language (shown when primary is exhausted)
+        const fallback = questions.value.filter(q => q.lang === otherLang && !votedIds.has(q.id))
+        return primary.length > 0 ? primary : fallback
     })
 
     const fetchData = async () => {
@@ -53,14 +59,11 @@ export function useVoteData() {
             userCreatedCount.value = count || 0
             userReports.value = rErr ? [] : (rData || []).map(r => r.question_id)
 
-            // 2. Determine which question IDs we need (current feed + all voted questions)
-            const votedIds = (vData || []).map(v => v.question_id)
-
-            // 3. Fetch questions: those in current lang OR those the user voted on
+            // 2. Fetch ALL questions (both languages) so the feed can fall back to the
+            //    other language when the current language runs out of unvoted questions.
             const { data: qData, error: qErr } = await supabase
                 .from('vote_questions')
                 .select('*')
-                .or(`lang.eq.${currentLang}${votedIds.length ? `,id.in.(${votedIds.join(',')})` : ''}`)
                 .order('created_at', { ascending: false })
 
             if (qErr) throw qErr
