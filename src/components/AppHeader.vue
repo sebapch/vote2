@@ -18,15 +18,16 @@
 
         <button
           @click="$emit('navigate', 'profile')"
-          class="w-8 h-8 rounded-full border-2 transition-all overflow-hidden flex items-center justify-center"
-          :class="activeTab === 'profile' ? 'border-blue-600' : 'border-slate-200'"
+          class="w-8 h-8 rounded-full border-2 transition-all overflow-hidden flex items-center justify-center bg-slate-50 relative"
+          :class="activeTab === 'profile' ? 'border-blue-600 shadow-sm' : 'border-slate-200'"
         >
           <img
-            v-if="user?.user_metadata?.avatar_url"
+            v-if="user?.user_metadata?.avatar_url && !avatarError"
             :src="user.user_metadata.avatar_url"
             class="w-full h-full object-cover"
+            @error="avatarError = true"
           />
-          <User v-else :size="16" class="text-slate-400" />
+          <User v-else :size="16" class="text-slate-300" />
         </button>
       </div>
     </div>
@@ -34,12 +35,14 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { User } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { useAuth } from '../composables/useAuth';
 
 const { user } = useAuth();
 const { locale } = useI18n();
+const avatarError = ref(false);
 
 const toggleLocale = () => {
   locale.value = locale.value === 'es' ? 'en' : 'es';

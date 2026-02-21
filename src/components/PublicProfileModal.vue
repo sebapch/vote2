@@ -18,8 +18,8 @@
       <template v-else>
         <!-- Profile hero — centered -->
         <div class="flex flex-col items-center text-center px-8 pt-8 pb-6 border-b border-slate-100 shrink-0">
-          <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center mb-4 shadow-sm">
-            <img v-if="profile?.avatar_url" :src="profile.avatar_url" class="w-full h-full object-cover" />
+          <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center mb-4 shadow-sm relative">
+            <img v-if="profile?.avatar_url && !avatarError" :src="profile.avatar_url" class="w-full h-full object-cover" @error="avatarError = true" />
             <User v-else :size="32" class="text-slate-300" />
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">{{ firstName }}</h3>
@@ -51,11 +51,26 @@
           <div
             v-for="q in createdQuestions"
             :key="q.id"
-            class="rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden"
+            class="rounded-2xl bg-white border border-slate-100 overflow-hidden shadow-sm"
           >
             <!-- Image -->
-            <div v-if="q.image_url" class="h-28 overflow-hidden bg-slate-200">
-              <img :src="q.image_url" class="w-full h-full object-cover" />
+            <div v-if="q.image_url" class="h-28 overflow-hidden bg-slate-50 relative border-b border-slate-50">
+              <div v-if="!loadedImages[q.id]" class="absolute inset-0 flex items-center justify-center bg-slate-50">
+                <div class="w-5 h-5 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+              
+              <img 
+                :src="q.image_url" 
+                class="w-full h-full object-cover transition-opacity duration-500"
+                :class="loadedImages[q.id] ? 'opacity-100' : 'opacity-0'"
+                @load="loadedImages[q.id] = true"
+                @error="imageErrors[q.id] = true; loadedImages[q.id] = true"
+              />
+              
+              <div v-if="imageErrors[q.id]" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400 gap-1.5">
+                <ImageIcon :size="20" class="opacity-30" />
+                <span class="text-[8px] font-bold uppercase tracking-widest opacity-50">Error</span>
+              </div>
             </div>
 
             <div class="p-4">
@@ -63,20 +78,20 @@
               <p class="text-sm font-semibold text-slate-800 leading-snug mb-3 text-center">{{ q.text }}</p>
 
               <!-- Progress bar -->
-              <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden mb-2.5">
+              <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-3">
                 <div class="h-full bg-blue-500 rounded-full" :style="{ width: getYesPercent(q) + '%' }"></div>
               </div>
 
               <!-- Chips row — centered -->
               <div class="flex items-center justify-center gap-2">
-                <span class="flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg">
-                  <ThumbsUp :size="9" /> {{ q.yes_count || 0 }} {{ $t('results.yes') }} ({{ getYesPercent(q) }}%)
+                <span class="flex items-center gap-1 text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg">
+                  <ThumbsUp :size="10" stroke-width="3" /> {{ getYesPercent(q) }}%
                 </span>
                 <span class="text-[9px] text-slate-300">·</span>
-                <span class="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg">
-                  <ThumbsDown :size="9" /> {{ q.no_count || 0 }} {{ $t('results.no') }}
+                <span class="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                  <ThumbsDown :size="10" stroke-width="3" /> {{ 100 - getYesPercent(q) }}%
                 </span>
-                <span class="text-[9px] text-slate-400 ml-1">{{ $t('results.voted', { n: getTotalVotes(q) }) }}</span>
+                <span class="text-[9px] font-bold text-slate-400 ml-1 uppercase tracking-widest">{{ $t('results.voted', { n: getTotalVotes(q) }) }}</span>
               </div>
             </div>
           </div>
@@ -91,9 +106,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { User, X, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+import { User, X, ThumbsUp, ThumbsDown, ImageIcon } from 'lucide-vue-next'
 import { supabase } from '../lib/supabase'
 import i18n from '../i18n'
 
@@ -104,6 +119,9 @@ defineEmits(['close'])
 const profile = ref(null)
 const createdQuestions = ref([])
 const loadingProfile = ref(true)
+const avatarError = ref(false)
+const loadedImages = reactive({})
+const imageErrors = reactive({})
 
 // Only show first name for privacy
 const firstName = computed(() => {

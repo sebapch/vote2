@@ -22,9 +22,14 @@ export function useVoteData() {
             .reverse()
     )
 
+    const currentLangQuestions = computed(() => {
+        const currentLang = i18n.global.locale.value
+        return questions.value.filter(q => q.lang === currentLang)
+    })
+
     const unvotedQuestions = computed(() => {
         const votedIds = new Set(userVotes.value.map(v => v.question_id))
-        return questions.value.filter(q => !votedIds.has(q.id))
+        return currentLangQuestions.value.filter(q => !votedIds.has(q.id))
     })
 
     const fetchData = async () => {
@@ -32,33 +37,45 @@ export function useVoteData() {
         loading.value = true
         try {
             const currentLang = i18n.global.locale.value
-            const [{ data: qData, error: qErr }, { data: vData, error: vErr }, { count, error: cErr }] =
-                await Promise.all([
-                    supabase.from('vote_questions').select('*').eq('lang', currentLang).order('created_at', { ascending: false }),
-                    supabase.from('vote_votes').select('*').eq('user_id', user.value.id),
-                    supabase.from('vote_questions').select('*', { count: 'exact', head: true }).eq('user_id', user.value.id).eq('lang', currentLang),
-                ])
-            if (qErr) throw qErr
+
+            // 1. Fetch user votes and created count first to know which IDs to fetch
+            const [{ data: vData, error: vErr }, { count, error: cErr }] = await Promise.all([
+                supabase.from('vote_votes').select('*').eq('user_id', user.value.id),
+                supabase.from('vote_questions').select('*', { count: 'exact', head: true }).eq('user_id', user.value.id).eq('lang', currentLang),
+            ])
             if (vErr) throw vErr
             if (cErr) throw cErr
 
-            // Fetch creator profiles separately — works regardless of FK setup
-            const uniqueIds = [...new Set((qData || []).map(q => q.user_id).filter(Boolean))]
+            userVotes.value = vData || []
+            userCreatedCount.value = count || 0
+
+            // 2. Determine which question IDs we need (current feed + all voted questions)
+            const votedIds = (vData || []).map(v => v.question_id)
+
+            // 3. Fetch questions: those in current lang OR those the user voted on
+            const { data: qData, error: qErr } = await supabase
+                .from('vote_questions')
+                .select('*')
+                .or(`lang.eq.${currentLang}${votedIds.length ? `,id.in.(${votedIds.join(',')})` : ''}`)
+                .order('created_at', { ascending: false })
+
+            if (qErr) throw qErr
+
+            // 4. Fetch creator profiles for these questions
+            const uniqueUserIds = [...new Set((qData || []).map(q => q.user_id).filter(Boolean))]
             let profileMap = {}
-            if (uniqueIds.length) {
+            if (uniqueUserIds.length) {
                 const { data: profiles } = await supabase
                     .from('vote_profiles')
                     .select('id, full_name, avatar_url')
-                    .in('id', uniqueIds)
+                    .in('id', uniqueUserIds)
                 profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]))
             }
 
             questions.value = (qData || []).map(q => ({ ...q, creator: profileMap[q.user_id] ?? null }))
-            userVotes.value = vData
-            userCreatedCount.value = count || 0
 
-            // Preload images for current language to avoid blank cards
-            questions.value.slice(0, 5).forEach(q => {
+            // 5. Preload images for history and top feed
+            questions.value.slice(0, 20).forEach(q => {
                 if (q.image_url) {
                     const img = new Image();
                     img.src = q.image_url;
@@ -125,6 +142,7 @@ export function useVoteData() {
         userCreatedCount,
         loading,
         unvotedQuestions,
+        currentLangQuestions,
         profileHistory,
         fetchData,
         castVote,

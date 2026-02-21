@@ -65,7 +65,12 @@
               :title="$t('results.view_profile')"
               @click.stop="selectedCreatorId = question.user_id"
             >
-              <img v-if="question.creator?.avatar_url" :src="question.creator.avatar_url" class="w-full h-full object-cover" />
+              <img 
+                v-if="question.creator?.avatar_url && !avatarErrors[question.user_id]" 
+                :src="question.creator.avatar_url" 
+                class="w-full h-full object-cover" 
+                @error="avatarErrors[question.user_id] = true"
+              />
               <User v-else :size="12" class="text-slate-400" />
             </button>
 
@@ -95,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { BarChart3, User } from 'lucide-vue-next';
 import PublicProfileModal from './PublicProfileModal.vue';
 import { useAuth } from '../composables/useAuth';
@@ -107,6 +112,7 @@ const { user } = useAuth();
 const { userVotes } = useVoteData();
 
 const selectedCreatorId = ref(null);
+const avatarErrors = reactive({});
 
 const getTotalVotes = (q) => (q.yes_count || 0) + (q.no_count || 0);
 const getYesPercent = (q) => {

@@ -31,7 +31,7 @@
           />
           <ResultsView
             v-else-if="currentTab === 'results'"
-            :questions="questions"
+            :questions="currentLangQuestions"
           />
           <ProfileView
             v-else-if="currentTab === 'profile'"
@@ -53,6 +53,11 @@
         @close="showCreateModal = false"
         @create="handleCreate"
       />
+
+      <Walkthrough
+        v-if="profile && !profile.onboarding_completed"
+        @finish="completeOnboarding"
+      />
     </template>
 
   </div>
@@ -71,9 +76,10 @@ import BottomNav from './components/BottomNav.vue'
 import ResultsView from './components/ResultsView.vue'
 import ProfileView from './components/ProfileView.vue'
 import CreateQuestionModal from './components/CreateQuestionModal.vue'
+import Walkthrough from './components/Walkthrough.vue'
 
-const { user, authInitialized } = useAuth()
-const { questions, userVotes, userCreatedCount, profileHistory, loading, fetchData, createQuestion, clearData } = useVoteData()
+const { user, profile, authInitialized, completeOnboarding } = useAuth()
+const { questions, currentLangQuestions, userVotes, userCreatedCount, profileHistory, loading, fetchData, createQuestion, clearData } = useVoteData()
 
 const currentTab = ref('feed')
 const showCreateModal = ref(false)

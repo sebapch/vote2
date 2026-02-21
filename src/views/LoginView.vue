@@ -16,6 +16,7 @@
       <p class="text-slate-500 mb-12 leading-relaxed text-sm font-medium">
         {{ $t('login.subtitle') }}
       </p>
+
       <button
         @click="loginWithGoogle"
         class="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-800 transition-all active:scale-[0.98] shadow-lg shadow-slate-200"

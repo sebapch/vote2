@@ -70,6 +70,13 @@ const messages = {
             comida: 'Comida',
             oficina: 'Oficina',
             tech: 'Tech'
+        },
+        onboarding: {
+            welcome: '¡Bienvenido a VOTE!',
+            step1: 'Desliza a la derecha para SI, a la izquierda para NO.',
+            step2: 'Crea tus propias preguntas con el botón central.',
+            step3: 'Mira los resultados en tiempo real de toda la comunidad.',
+            finish: '¡Empezar!'
         }
     },
     en: {
@@ -141,6 +148,13 @@ const messages = {
             comida: 'Food',
             oficina: 'Office',
             tech: 'Tech'
+        },
+        onboarding: {
+            welcome: 'Welcome to VOTE!',
+            step1: 'Swipe right for YES, left for NO.',
+            step2: 'Create your own questions with the center button.',
+            step3: 'See real-time results from the entire community.',
+            finish: 'Get Started!'
         }
     }
 }
