@@ -77,6 +77,13 @@ const messages = {
             step2: 'Crea tus propias preguntas con el botón central.',
             step3: 'Mira los resultados en tiempo real de toda la comunidad.',
             finish: '¡Empezar!'
+        },
+        report: {
+            button: 'Denunciar',
+            confirm: '¿Denunciar esta pregunta como inapropiada?',
+            done: 'Denuncia enviada',
+            already: 'Ya denunciaste esta pregunta',
+            tooltip: 'Contenido inapropiado'
         }
     },
     en: {
@@ -155,6 +162,13 @@ const messages = {
             step2: 'Create your own questions with the center button.',
             step3: 'See real-time results from the entire community.',
             finish: 'Get Started!'
+        },
+        report: {
+            button: 'Report',
+            confirm: 'Report this question as inappropriate?',
+            done: 'Report submitted',
+            already: 'You already reported this question',
+            tooltip: 'Inappropriate content'
         }
     }
 }

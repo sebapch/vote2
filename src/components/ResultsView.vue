@@ -57,7 +57,7 @@
             <div class="h-full bg-slate-300 rounded-full transition-all duration-700" :style="{ width: (100 - getYesPercent(question)) + '%' }"></div>
           </div>
 
-          <!-- Bottom row: creator + personal badge -->
+          <!-- Bottom row: creator + personal badge + report -->
           <div class="flex items-center justify-between">
             <!-- Creator avatar -->
             <button
@@ -85,6 +85,20 @@
 
             <!-- No vote yet badge -->
             <span v-else-if="getTotalVotes(question) === 0" class="text-[8px] font-bold text-slate-300 uppercase tracking-wider">{{ $t('results.no_votes') }}</span>
+
+            <!-- Report button -->
+            <button
+              @click.stop="handleReport(question.id)"
+              :disabled="userReports.includes(question.id)"
+              :title="userReports.includes(question.id) ? $t('report.already') : $t('report.button')"
+              class="flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all active:scale-90 ml-auto"
+              :class="userReports.includes(question.id)
+                ? 'text-slate-300 cursor-not-allowed'
+                : 'text-orange-400 hover:bg-orange-50 hover:text-orange-600'"
+            >
+              <Flag :size="9" />
+              {{ userReports.includes(question.id) ? $t('report.done') : $t('report.button') }}
+            </button>
           </div>
         </div>
       </div>
@@ -101,7 +115,7 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue';
-import { BarChart3, User } from 'lucide-vue-next';
+import { BarChart3, User, Flag } from 'lucide-vue-next';
 import PublicProfileModal from './PublicProfileModal.vue';
 import { useAuth } from '../composables/useAuth';
 import { useVoteData } from '../composables/useVoteData';
@@ -109,10 +123,14 @@ import { useVoteData } from '../composables/useVoteData';
 const props = defineProps({ questions: Array });
 
 const { user } = useAuth();
-const { userVotes } = useVoteData();
+const { userVotes, userReports, reportQuestion } = useVoteData();
 
 const selectedCreatorId = ref(null);
 const avatarErrors = reactive({});
+
+const handleReport = async (questionId) => {
+  await reportQuestion(questionId);
+};
 
 const getTotalVotes = (q) => (q.yes_count || 0) + (q.no_count || 0);
 const getYesPercent = (q) => {

@@ -8,6 +8,7 @@ const { user } = useAuth()
 // Module-level shared data state
 const questions = ref([])
 const userVotes = ref([])
+const userReports = ref([])
 const userCreatedCount = ref(0)
 const loading = ref(false)
 
@@ -39,15 +40,18 @@ export function useVoteData() {
             const currentLang = i18n.global.locale.value
 
             // 1. Fetch user votes and created count first to know which IDs to fetch
-            const [{ data: vData, error: vErr }, { count, error: cErr }] = await Promise.all([
+            const [{ data: vData, error: vErr }, { count, error: cErr }, { data: rData, error: rErr }] = await Promise.all([
                 supabase.from('vote_votes').select('*').eq('user_id', user.value.id),
                 supabase.from('vote_questions').select('*', { count: 'exact', head: true }).eq('user_id', user.value.id).eq('lang', currentLang),
+                supabase.from('vote_reports').select('question_id').eq('user_id', user.value.id),
             ])
             if (vErr) throw vErr
             if (cErr) throw cErr
+            if (rErr) throw rErr
 
             userVotes.value = vData || []
             userCreatedCount.value = count || 0
+            userReports.value = (rData || []).map(r => r.question_id)
 
             // 2. Determine which question IDs we need (current feed + all voted questions)
             const votedIds = (vData || []).map(v => v.question_id)
@@ -133,12 +137,31 @@ export function useVoteData() {
     const clearData = () => {
         questions.value = []
         userVotes.value = []
+        userReports.value = []
         userCreatedCount.value = 0
+    }
+
+    const reportQuestion = async (questionId) => {
+        if (!user.value) return { success: false }
+        try {
+            const { data, error } = await supabase.rpc('report_question', { p_question_id: questionId })
+            if (error) throw error
+            if (data?.success) {
+                userReports.value.push(questionId)
+                // Remove question from local feed immediately
+                questions.value = questions.value.filter(q => q.id !== questionId)
+            }
+            return data
+        } catch (e) {
+            console.error('reportQuestion error:', e.message)
+            return { success: false }
+        }
     }
 
     return {
         questions,
         userVotes,
+        userReports,
         userCreatedCount,
         loading,
         unvotedQuestions,
@@ -148,5 +171,6 @@ export function useVoteData() {
         castVote,
         createQuestion,
         clearData,
+        reportQuestion,
     }
 }

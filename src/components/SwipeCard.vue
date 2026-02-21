@@ -38,10 +38,27 @@
       <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
         <span class="text-6xl opacity-20">?</span>
       </div>
+
+      <!-- Report button: top-right corner, always visible -->
+      <button
+        @mousedown.stop
+        @touchstart.stop
+        @click.stop="handleReport"
+        :disabled="reported"
+        :title="reported ? $t('report.already') : $t('report.tooltip')"
+        class="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-90 shadow-lg"
+        :class="reported
+          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+          : 'bg-orange-500 text-white hover:bg-red-600 hover:scale-105'"
+      >
+        <Flag :size="11" />
+        {{ reported ? $t('report.done') : $t('report.button') }}
+      </button>
     </div>
+
     
     <!-- Content Area -->
-    <div class="flex flex-col justify-between h-[40%] p-6 bg-white">
+    <div class="flex flex-col justify-between h-[40%] p-6 bg-white relative">
       <p class="text-base font-bold text-slate-900 leading-snug line-clamp-3 pointer-events-none">
         {{ question.text }}
       </p>
@@ -65,6 +82,23 @@
           <Check :size="14" /> {{ $t('results.yes') }}
         </button>
       </div>
+
+      <!-- Report button fallback for no-image cards -->
+      <button
+        v-if="!question.image_url"
+        @mousedown.stop
+        @touchstart.stop
+        @click.stop="handleReport"
+        :disabled="reported"
+        :title="reported ? $t('report.already') : $t('report.tooltip')"
+        class="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all active:scale-90"
+        :class="reported
+          ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+          : 'bg-orange-100 text-orange-500 hover:bg-orange-500 hover:text-white'"
+      >
+        <Flag :size="10" />
+        {{ reported ? $t('report.done') : $t('report.button') }}
+      </button>
     </div>
 
     <!-- Swipe Indicators -->
@@ -85,14 +119,27 @@
 
 <script setup>
 import { ref, computed, onUnmounted, onMounted } from 'vue';
-import { Check, X, ImageIcon } from 'lucide-vue-next';
+import { Check, X, ImageIcon, Flag } from 'lucide-vue-next';
+import { useVoteData } from '../composables/useVoteData';
 
 const props = defineProps({
   question: Object,
-  swiped: String
+  swiped: String,
+  alreadyReported: Boolean,
 });
 
-const emit = defineEmits(['vote']);
+const emit = defineEmits(['vote', 'report']);
+
+const { reportQuestion } = useVoteData();
+
+const reported = ref(props.alreadyReported ?? false);
+
+const handleReport = async () => {
+  if (reported.value || !props.question) return;
+  reported.value = true;
+  emit('report', props.question.id);
+  await reportQuestion(props.question.id);
+};
 
 const cardRef = ref(null);
 const imgRef = ref(null);

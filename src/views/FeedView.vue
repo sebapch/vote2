@@ -13,7 +13,9 @@
         :key="unvotedQuestions[currentIndex].id"
         :question="unvotedQuestions[currentIndex]"
         :swiped="swipeDirection"
+        :alreadyReported="userReports.includes(unvotedQuestions[currentIndex].id)"
         @vote="handleVote"
+        @report="handleReport"
       />
     </div>
 
@@ -39,7 +41,7 @@ import { Trophy } from 'lucide-vue-next';
 import SwipeCard from '../components/SwipeCard.vue';
 import { useVoteData } from '../composables/useVoteData';
 
-const { unvotedQuestions, castVote } = useVoteData();
+const { unvotedQuestions, userReports, castVote } = useVoteData();
 const emit = defineEmits(['reload']);
 
 const currentIndex = ref(0);
@@ -58,6 +60,14 @@ const handleVote = async (direction) => {
     currentIndex.value++;
     swipeDirection.value = null;
   }, 420);
+};
+
+const handleReport = () => {
+  // Skip to next card after reporting
+  setTimeout(() => {
+    currentIndex.value++;
+    swipeDirection.value = null;
+  }, 800);
 };
 
 // Reset when feed reloads
