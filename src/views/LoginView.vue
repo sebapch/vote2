@@ -1,5 +1,14 @@
 <template>
-  <div class="w-full flex flex-col items-center justify-center min-h-screen bg-[#F4F4F7] px-6">
+  <div class="w-full flex flex-col items-center justify-center min-h-screen bg-[#F4F4F7] px-6 relative">
+    <!-- Language Toggle -->
+    <div class="absolute top-6 right-6">
+      <button
+        @click="toggleLocale"
+        class="text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm active:scale-95"
+      >
+        {{ locale === 'es' ? 'EN' : 'ES' }}
+      </button>
+    </div>
     <h1 class="text-5xl font-black text-slate-900 tracking-tighter mb-16 select-none">
       VOTE<span class="text-blue-600">.</span>
     </h1>
@@ -34,8 +43,14 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { LogIn } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
 
+const { locale } = useI18n();
 const { loginWithGoogle } = useAuth();
+
+const toggleLocale = () => {
+  locale.value = locale.value === 'es' ? 'en' : 'es';
+};
 </script>
