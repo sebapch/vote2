@@ -39,9 +39,22 @@ export function useVoteData() {
             if (qErr) throw qErr
             if (vErr) throw vErr
             if (cErr) throw cErr
-            questions.value = qData
+
+            // Fetch creator profiles separately — works regardless of FK setup
+            const uniqueIds = [...new Set((qData || []).map(q => q.user_id).filter(Boolean))]
+            let profileMap = {}
+            if (uniqueIds.length) {
+                const { data: profiles } = await supabase
+                    .from('vote_profiles')
+                    .select('id, full_name, avatar_url')
+                    .in('id', uniqueIds)
+                profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]))
+            }
+
+            questions.value = (qData || []).map(q => ({ ...q, creator: profileMap[q.user_id] ?? null }))
             userVotes.value = vData
             userCreatedCount.value = count || 0
+
         } catch (e) {
             console.error('fetchData error:', e.message)
         } finally {
